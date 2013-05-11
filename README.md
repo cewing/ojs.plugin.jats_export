@@ -1,3 +1,3 @@
-= OJS JATS Export Plugin =
+# OJS JATS Export Plugin #
 
 work in progress
