@@ -141,8 +141,9 @@ class JATSImportExportPlugin extends ImportExportPlugin {
 	function exportArticle(&$journal, &$issue, &$section, &$article, $outputFile = null) {
 		$this->import('JATSExportDom');
 		$doc =& XMLCustomWriter::createDocument('article', JATS_DTD_ID, JATS_DTD_URL);
-      // $articleNode =& JATSExportDom::generateArticleDom($doc, $journal, $issue, $section, $article);
-      // XMLCustomWriter::appendChild($doc, $articleNode);
+		$doc->formatOutput = true;
+      $articleNode =& JATSExportDom::generateArticleDom($doc, $journal, $issue, $section, $article);
+      XMLCustomWriter::appendChild($doc, $articleNode);
 
 		if (!empty($outputFile)) {
 			if (($h = fopen($outputFile, 'w'))===false) return false;

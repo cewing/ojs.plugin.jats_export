@@ -141,136 +141,142 @@ class JATSExportDOM {
 
 	function &generateArticleDom(&$doc, &$journal, &$issue, &$section, &$article) {
 		$root =& XMLCustomWriter::createElement($doc, 'article');
-		XMLCustomWriter::setAttribute($root, 'locale', $article->getLocale());
-		XMLCustomWriter::setAttribute($root, 'public_id', $article->getPubId('publisher-id'), false);
-		XMLCustomWriter::setAttribute($root, 'language', $article->getLanguage(), false);
+		XMLCustomWriter::setAttribute($root, 'article-type', 'case-report');
+		XMLCustomWriter::setAttribute($root, 'dtd-version', '1.0');
+      // XMLCustomWriter::setAttribute($root, 'public_id', $article->getPubId('publisher-id'), false);
+      // XMLCustomWriter::setAttribute($root, 'language', $article->getLanguage(), false);
 
-		NativeExportDom::generatePubId($doc, $root, $article, $issue);
+      // NativeExportDom::generatePubId($doc, $root, $article, $issue);
+      
+      /* --- Article Front Matter --- */
+      $frontNode =& JATSExportDOM::generateArticleFrontDom($doc, $journal, $issue, $section, $article);
+      XMLCustomWriter::appendChild($root, $frontNode);
+      unset($frontNode);
 
 		/* --- Titles and Abstracts --- */
-		if (is_array($article->getTitle(null))) foreach ($article->getTitle(null) as $locale => $title) {
-			$titleNode =& XMLCustomWriter::createChildWithText($doc, $root, 'title', $title, false);
-			if ($titleNode) XMLCustomWriter::setAttribute($titleNode, 'locale', $locale);
-			unset($titleNode);
-		}
-
-		if (is_array($article->getAbstract(null))) foreach ($article->getAbstract(null) as $locale => $abstract) {
-			$abstractNode =& XMLCustomWriter::createChildWithText($doc, $root, 'abstract', $abstract, false);
-			if ($abstractNode) XMLCustomWriter::setAttribute($abstractNode, 'locale', $locale);
-			unset($abstractNode);
-		}
+      // if (is_array($article->getTitle(null))) foreach ($article->getTitle(null) as $locale => $title) {
+      //    $titleNode =& XMLCustomWriter::createChildWithText($doc, $root, 'title', $title, false);
+      //    if ($titleNode) XMLCustomWriter::setAttribute($titleNode, 'locale', $locale);
+      //    unset($titleNode);
+      // }
+      // 
+      // if (is_array($article->getAbstract(null))) foreach ($article->getAbstract(null) as $locale => $abstract) {
+      //    $abstractNode =& XMLCustomWriter::createChildWithText($doc, $root, 'abstract', $abstract, false);
+      //    if ($abstractNode) XMLCustomWriter::setAttribute($abstractNode, 'locale', $locale);
+      //    unset($abstractNode);
+      // }
 
 		/* --- Indexing --- */
 
-		$indexingNode =& XMLCustomWriter::createElement($doc, 'indexing');
-		$isIndexingNecessary = false;
-
-		if (is_array($article->getDiscipline(null))) foreach ($article->getDiscipline(null) as $locale => $discipline) {
-			$disciplineNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'discipline', $discipline, false);
-			if ($disciplineNode) {
-				XMLCustomWriter::setAttribute($disciplineNode, 'locale', $locale);
-				$isIndexingNecessary = true;
-			}
-			unset($disciplineNode);
-		}
-		if (is_array($article->getType(null))) foreach ($article->getType(null) as $locale => $type) {
-			$typeNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'type', $type, false);
-			if ($typeNode) {
-				XMLCustomWriter::setAttribute($typeNode, 'locale', $locale);
-				$isIndexingNecessary = true;
-			}
-			unset($typeNode);
-		}
-		if (is_array($article->getSubject(null))) foreach ($article->getSubject(null) as $locale => $subject) {
-			$subjectNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'subject', $subject, false);
-			if ($subjectNode) {
-				XMLCustomWriter::setAttribute($subjectNode, 'locale', $locale);
-				$isIndexingNecessary = true;
-			}
-			unset($subjectNode);
-		}
-		if (is_array($article->getSubjectClass(null))) foreach ($article->getSubjectClass(null) as $locale => $subjectClass) {
-			$subjectClassNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'subject_class', $subjectClass, false);
-			if ($subjectClassNode) {
-				XMLCustomWriter::setAttribute($subjectClassNode, 'locale', $locale);
-				$isIndexingNecessary = true;
-			}
-			unset($subjectClassNode);
-		}
-
-		$coverageNode =& XMLCustomWriter::createElement($doc, 'coverage');
-		$isCoverageNecessary = false;
-
-		if (is_array($article->getCoverageGeo(null))) foreach ($article->getCoverageGeo(null) as $locale => $geographical) {
-			$geographicalNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'geographical', $geographical, false);
-			if ($geographicalNode) {
-				XMLCustomWriter::setAttribute($geographicalNode, 'locale', $locale);
-				$isCoverageNecessary = true;
-			}
-			unset($geographicalNode);
-		}
-		if (is_array($article->getCoverageChron(null))) foreach ($article->getCoverageChron(null) as $locale => $chronological) {
-			$chronologicalNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'chronological', $chronological, false);
-			if ($chronologicalNode) {
-				XMLCustomWriter::setAttribute($chronologicalNode, 'locale', $locale);
-				$isCoverageNecessary = true;
-			}
-			unset($chronologicalNode);
-		}
-		if (is_array($article->getCoverageSample(null))) foreach ($article->getCoverageSample(null) as $locale => $sample) {
-			$sampleNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'sample', $sample, false);
-			if ($sampleNode) {
-				XMLCustomWriter::setAttribute($sampleNode, 'locale', $locale);
-				$isCoverageNecessary = true;
-			}
-			unset($sampleNode);
-		}
-
-		if ($isCoverageNecessary) {
-			XMLCustomWriter::appendChild($indexingNode, $coverageNode);
-			$isIndexingNecessary = true;
-		}
-
-		if ($isIndexingNecessary) XMLCustomWriter::appendChild($root, $indexingNode);
+      // $indexingNode =& XMLCustomWriter::createElement($doc, 'indexing');
+      // $isIndexingNecessary = false;
+      // 
+      // if (is_array($article->getDiscipline(null))) foreach ($article->getDiscipline(null) as $locale => $discipline) {
+      //    $disciplineNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'discipline', $discipline, false);
+      //    if ($disciplineNode) {
+      //       XMLCustomWriter::setAttribute($disciplineNode, 'locale', $locale);
+      //       $isIndexingNecessary = true;
+      //    }
+      //    unset($disciplineNode);
+      // }
+      // if (is_array($article->getType(null))) foreach ($article->getType(null) as $locale => $type) {
+      //    $typeNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'type', $type, false);
+      //    if ($typeNode) {
+      //       XMLCustomWriter::setAttribute($typeNode, 'locale', $locale);
+      //       $isIndexingNecessary = true;
+      //    }
+      //    unset($typeNode);
+      // }
+      // if (is_array($article->getSubject(null))) foreach ($article->getSubject(null) as $locale => $subject) {
+      //    $subjectNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'subject', $subject, false);
+      //    if ($subjectNode) {
+      //       XMLCustomWriter::setAttribute($subjectNode, 'locale', $locale);
+      //       $isIndexingNecessary = true;
+      //    }
+      //    unset($subjectNode);
+      // }
+      // if (is_array($article->getSubjectClass(null))) foreach ($article->getSubjectClass(null) as $locale => $subjectClass) {
+      //    $subjectClassNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'subject_class', $subjectClass, false);
+      //    if ($subjectClassNode) {
+      //       XMLCustomWriter::setAttribute($subjectClassNode, 'locale', $locale);
+      //       $isIndexingNecessary = true;
+      //    }
+      //    unset($subjectClassNode);
+      // }
+      // 
+      // $coverageNode =& XMLCustomWriter::createElement($doc, 'coverage');
+      // $isCoverageNecessary = false;
+      // 
+      // if (is_array($article->getCoverageGeo(null))) foreach ($article->getCoverageGeo(null) as $locale => $geographical) {
+      //    $geographicalNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'geographical', $geographical, false);
+      //    if ($geographicalNode) {
+      //       XMLCustomWriter::setAttribute($geographicalNode, 'locale', $locale);
+      //       $isCoverageNecessary = true;
+      //    }
+      //    unset($geographicalNode);
+      // }
+      // if (is_array($article->getCoverageChron(null))) foreach ($article->getCoverageChron(null) as $locale => $chronological) {
+      //    $chronologicalNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'chronological', $chronological, false);
+      //    if ($chronologicalNode) {
+      //       XMLCustomWriter::setAttribute($chronologicalNode, 'locale', $locale);
+      //       $isCoverageNecessary = true;
+      //    }
+      //    unset($chronologicalNode);
+      // }
+      // if (is_array($article->getCoverageSample(null))) foreach ($article->getCoverageSample(null) as $locale => $sample) {
+      //    $sampleNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'sample', $sample, false);
+      //    if ($sampleNode) {
+      //       XMLCustomWriter::setAttribute($sampleNode, 'locale', $locale);
+      //       $isCoverageNecessary = true;
+      //    }
+      //    unset($sampleNode);
+      // }
+      // 
+      // if ($isCoverageNecessary) {
+      //    XMLCustomWriter::appendChild($indexingNode, $coverageNode);
+      //    $isIndexingNecessary = true;
+      // }
+      // 
+      // if ($isIndexingNecessary) XMLCustomWriter::appendChild($root, $indexingNode);
 
 		/* --- */
 
 		/* --- Authors --- */
 
-		foreach ($article->getAuthors() as $author) {
-			$authorNode =& NativeExportDom::generateAuthorDom($doc, $journal, $issue, $article, $author);
-			XMLCustomWriter::appendChild($root, $authorNode);
-			unset($authorNode);
-		}
+      // foreach ($article->getAuthors() as $author) {
+      //    $authorNode =& NativeExportDom::generateAuthorDom($doc, $journal, $issue, $article, $author);
+      //    XMLCustomWriter::appendChild($root, $authorNode);
+      //    unset($authorNode);
+      // }
 
 		/* --- */
-		if (is_array($article->getShowCoverPage(null))) foreach (array_keys($article->getShowCoverPage(null)) as $locale) {
-			if ($article->getShowCoverPage($locale)) {
-				$coverNode =& XMLCustomWriter::createElement($doc, 'cover');
-				XMLCustomWriter::appendChild($root, $coverNode);
-				XMLCustomWriter::setAttribute($coverNode, 'locale', $locale);
+      // if (is_array($article->getShowCoverPage(null))) foreach (array_keys($article->getShowCoverPage(null)) as $locale) {
+      //    if ($article->getShowCoverPage($locale)) {
+      //       $coverNode =& XMLCustomWriter::createElement($doc, 'cover');
+      //       XMLCustomWriter::appendChild($root, $coverNode);
+      //       XMLCustomWriter::setAttribute($coverNode, 'locale', $locale);
+      // 
+      //       XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $issue->getCoverPageDescription($locale), false);
+      // 
+      //       $coverFile = $article->getFileName($locale);
+      //       if ($coverFile != '') {
+      //          $imageNode =& XMLCustomWriter::createElement($doc, 'image');
+      //          XMLCustomWriter::appendChild($coverNode, $imageNode);
+      //          import('classes.file.PublicFileManager');
+      //          $publicFileManager = new PublicFileManager();
+      //          $coverPagePath = $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
+      //          $coverPagePath .= $coverFile;
+      //          $embedNode =& XMLCustomWriter::createChildWithText($doc, $imageNode, 'embed', base64_encode($publicFileManager->readFile($coverPagePath)));
+      //          XMLCustomWriter::setAttribute($embedNode, 'filename', $article->getOriginalFileName($locale));
+      //          XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
+      //          XMLCustomWriter::setAttribute($embedNode, 'mime_type', String::mime_content_type($coverPagePath));
+      //       }
+      // 
+      //       unset($coverNode);
+      //    }
+      // }
 
-				XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $issue->getCoverPageDescription($locale), false);
-
-				$coverFile = $article->getFileName($locale);
-				if ($coverFile != '') {
-					$imageNode =& XMLCustomWriter::createElement($doc, 'image');
-					XMLCustomWriter::appendChild($coverNode, $imageNode);
-					import('classes.file.PublicFileManager');
-					$publicFileManager = new PublicFileManager();
-					$coverPagePath = $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
-					$coverPagePath .= $coverFile;
-					$embedNode =& XMLCustomWriter::createChildWithText($doc, $imageNode, 'embed', base64_encode($publicFileManager->readFile($coverPagePath)));
-					XMLCustomWriter::setAttribute($embedNode, 'filename', $article->getOriginalFileName($locale));
-					XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-					XMLCustomWriter::setAttribute($embedNode, 'mime_type', String::mime_content_type($coverPagePath));
-				}
-
-				unset($coverNode);
-			}
-		}
-
-		XMLCustomWriter::createChildWithText($doc, $root, 'pages', $article->getPages(), false);
+      // XMLCustomWriter::createChildWithText($doc, $root, 'pages', $article->getPages(), false);
 
 		// NOTE that this is a required field for import, but it's
 		// possible here to generate nonconforming XML via export b/c
@@ -278,33 +284,79 @@ class JATSExportDOM {
 		// to legacy data issues WRT an earlier lack of ability to
 		// define article pub dates. Some legacy data will be missing
 		// this date.
-		XMLCustomWriter::createChildWithText($doc, $root, 'date_published', NativeExportDom::formatDate($article->getDatePublished()), false);
-
-		if ($article->getAccessStatus() == ARTICLE_ACCESS_OPEN) {
-			$accessNode =& XMLCustomWriter::createElement($doc, 'open_access');
-			XMLCustomWriter::appendChild($root, $accessNode);
-		}
+      // XMLCustomWriter::createChildWithText($doc, $root, 'date_published', NativeExportDom::formatDate($article->getDatePublished()), false);
+      // 
+      // if ($article->getAccessStatus() == ARTICLE_ACCESS_OPEN) {
+      //    $accessNode =& XMLCustomWriter::createElement($doc, 'open_access');
+      //    XMLCustomWriter::appendChild($root, $accessNode);
+      // }
 
 		/* --- */
 
 
 		/* --- Galleys --- */
-		foreach ($article->getGalleys() as $galley) {
-			$galleyNode =& NativeExportDom::generateGalleyDom($doc, $journal, $issue, $article, $galley);
-			if ($galleyNode !== null) XMLCustomWriter::appendChild($root, $galleyNode);
-			unset($galleyNode);
-
-		}
+      //       foreach ($article->getGalleys() as $galley) {
+      //          $galleyNode =& NativeExportDom::generateGalleyDom($doc, $journal, $issue, $article, $galley);
+      //          if ($galleyNode !== null) XMLCustomWriter::appendChild($root, $galleyNode);
+      //          unset($galleyNode);
+      // }
 
 		/* --- Supplementary Files --- */
-		foreach ($article->getSuppFiles() as $suppFile) {
-			$suppNode =& NativeExportDom::generateSuppFileDom($doc, $journal, $issue, $article, $suppFile);
-			if ($suppNode !== null) XMLCustomWriter::appendChild($root, $suppNode);
-			unset($suppNode);
-		}
+      // foreach ($article->getSuppFiles() as $suppFile) {
+      //    $suppNode =& NativeExportDom::generateSuppFileDom($doc, $journal, $issue, $article, $suppFile);
+      //    if ($suppNode !== null) XMLCustomWriter::appendChild($root, $suppNode);
+      //    unset($suppNode);
+      // }
 
 		return $root;
 	}
+	
+	function &generateArticleFrontDom(&$doc, &$journal, &$issue, &$section, &$article) {
+	   $root =& XMLCustomWriter::createElement($doc, 'front');
+	   
+	   $journalMeta =& JATSExportDom::generateJournalMetaDom($doc, $journal, $issue);
+	   
+	   XMLCustomWriter::appendChild($root, $journalMeta);
+      unset($journalMeta);
+      
+	   return $root;
+	}
+
+   function &generateJournalMetaDom(&$doc, &$journal, &$issue) {
+      $root =& XMLCustomWriter::createElement($doc, 'journal-meta');
+      // add journal id (publisher type) to meta
+      $journalPublisherIdNode =& XMLCustomWriter::createChildWithText($doc, $root, 'journal-id', $journal->getSetting('abbreviation', 'en_US'));
+      XMLCustomWriter::setAttribute($journalPublisherIdNode, 'journal-id-type', 'publisher');
+      unset($journalPublisherIdNode);
+      // add journal title to meta
+      $titleGroup =& XMLCustomWriter::createElement($doc, 'journal-title-group');
+      XMLCustomWriter::createChildWithText($doc, $titleGroup, 'journal-title', $journal->getTitle('en_US'));
+      XMLCustomWriter::appendChild($root, $titleGroup);
+      unset($titleGroup);
+      // add journal issn to meta
+      $issn = $journal->getSetting('onlineIssn');
+      if ($issn) {
+         $issnNode =& XMLCustomWriter::createChildWithText($doc, $root, 'issn', $issn);
+         XMLCustomWriter::setAttribute($issnNode, 'pub-type', 'epub');
+      }
+      // add publisher info to meta
+      $pubName = $journal->getSetting('publisherInstitution');
+      $pubLoc = $journal->getSetting('publisherUrl');
+      if ($pubName || $pubLoc) {
+         $publisherInfo =& XMLCustomWriter::createElement($doc, 'publisher');
+         if ($pubName) {
+            XMLCustomWriter::createChildWithText($doc, $publisherInfo, 'publisher-name', $pubName);
+         }
+         if ($pubLoc) {
+            $pubLocNode =& XMLCustomWriter::createElement($doc, 'publisher-loc');
+            XMLCustomWriter::createChildWithText($doc, $pubLocNode, 'uri', $pubLoc);
+            XMLCustomWriter::appendChild($publisherInfo, $pubLocNode);
+         }
+         XMLCustomWriter::appendChild($root, $publisherInfo);
+      }
+      
+      return $root;
+   }
 
 	function &generateAuthorDom(&$doc, &$journal, &$issue, &$article, &$author) {
 		$root =& XMLCustomWriter::createElement($doc, 'author');
