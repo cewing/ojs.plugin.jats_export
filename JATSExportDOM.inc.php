@@ -11,6 +11,8 @@
 
 import('lib.pkp.classes.xml.XMLCustomWriter');
 
+define('JATS_DEFAULT_EXPORT_LOCALE', 'en_US');
+
 class JATSExportDOM {
 	function &generateIssueDom(&$doc, &$journal, &$issue) {
 		$root =& XMLCustomWriter::createElement($doc, 'issue');
@@ -315,22 +317,25 @@ class JATSExportDOM {
 	   $root =& XMLCustomWriter::createElement($doc, 'front');
 	   
 	   $journalMeta =& JATSExportDom::generateJournalMetaDom($doc, $journal, $issue);
-	   
 	   XMLCustomWriter::appendChild($root, $journalMeta);
       unset($journalMeta);
-      
+
+      $articleMeta =& JATSExportDom::generateArticleMetaDom($doc, $journal, $issue, $section, $article);
+      XMLCustomWriter::appendChild($root, $articleMeta);
+      unset($articleMeta);
+
 	   return $root;
 	}
 
    function &generateJournalMetaDom(&$doc, &$journal, &$issue) {
       $root =& XMLCustomWriter::createElement($doc, 'journal-meta');
       // add journal id (publisher type) to meta
-      $journalPublisherIdNode =& XMLCustomWriter::createChildWithText($doc, $root, 'journal-id', $journal->getSetting('abbreviation', 'en_US'));
+      $journalPublisherIdNode =& XMLCustomWriter::createChildWithText($doc, $root, 'journal-id', $journal->getSetting('abbreviation', JATS_DEFAULT_EXPORT_LOCALE));
       XMLCustomWriter::setAttribute($journalPublisherIdNode, 'journal-id-type', 'publisher');
       unset($journalPublisherIdNode);
       // add journal title to meta
       $titleGroup =& XMLCustomWriter::createElement($doc, 'journal-title-group');
-      XMLCustomWriter::createChildWithText($doc, $titleGroup, 'journal-title', $journal->getTitle('en_US'));
+      XMLCustomWriter::createChildWithText($doc, $titleGroup, 'journal-title', $journal->getTitle(JATS_DEFAULT_EXPORT_LOCALE));
       XMLCustomWriter::appendChild($root, $titleGroup);
       unset($titleGroup);
       // add journal issn to meta
@@ -358,31 +363,172 @@ class JATSExportDOM {
       return $root;
    }
 
+   function &generateArticleMetaDom(&$doc, &$journal, &$issue, &$section, &$article) {
+      $root =& XMLCustomWriter::createElement($doc, 'article-meta');
+      
+      // Add article identifiers provided by plugins
+      JATSExportDOM::generateArticleId($doc, $root, $article, $issue);
+      // Add article categories like journal section and keywords
+      $sectionNode =& JATSExportDOM::generateArticleSectionCategory($doc, $section);
+      $subjectNode =& JATSExportDOM::generateArticleSubjectCategory($doc, $article);
+      $disciplineNode =& JATSExportDOM::generateArticleDisciplineCategory($doc, $article);
+      if ($sectionNode || $subjectNode || $disciplineNode) {
+         $categoriesNode = XMLCustomWriter::createElement($doc, 'article-categories');
+         if ($sectionNode) {
+            XMLCustomWriter::appendChild($categoriesNode, $sectionNode);
+         }
+         if ($subjectNode) {
+            XMLCustomWriter::appendChild($categoriesNode, $subjectNode);
+         }
+         if ($disciplineNode) {
+            XMLCustomWriter::appendChild($categoriesNode, $disciplineNode);
+         }
+         XMLCustomWriter::appendChild($root, $categoriesNode);
+         unset($categoriesNode);
+      }
+      // Add article title
+      $titleNode =& XMLCustomWriter::createElement($doc, 'title-group');
+      XMLCustomWriter::createChildWithText($doc, $titleNode, 'article-title', trim($article->getLocalizedTitle(JATS_DEFAULT_EXPORT_LOCALE)));
+      XMLCustomWriter::appendChild($root, $titleNode);
+      unset($titleNode);
+      // Add article contributors
+      $contribNode =& JATSExportDOM::generateArticleContributorsDOM($doc, $journal, $issue, $section, $article);
+      XMLCustomWriter::appendChild($root, $contribNode);
+      unset($contribNode);
+      return $root;
+   }
+
+	function &generateArticleSectionCategory(&$doc, &$section) {
+	   $default = null;
+      $sectionTitle = $section->getTitle(JATS_DEFAULT_EXPORT_LOCALE);
+      $sectionAbbrev = $section->getAbbrev(JATS_DEFAULT_EXPORT_LOCALE);
+      if ($sectionTitle || $sectionAbbrev) {
+         $categoriesNode =& XMLCustomWriter::createElement($doc, 'subj-group');
+         XMLCustomWriter::setAttribute($categoriesNode, 'subj-group-type', 'section');
+         if ($sectionTitle && $sectionAbbrev) {
+            $compoundSubj =& XMLCustomWriter::createElement($doc, 'compound-subject');
+            $codePart =& XMLCustomWriter::createChildWithText($doc, $compoundSubj, 'compound-subject-part', $sectionAbbrev);
+            XMLCustomWriter::setAttribute($codePart, 'content-type', 'code');
+            $textPart =& XMLCustomWriter::createChildWithText($doc, $compoundSubj, 'compound-subject-part', $sectionTitle);
+            XMLCustomWriter::setAttribute($textPart, 'content-type', 'text');
+            XMLCustomWriter::appendChild($categoriesNode, $compoundSubj);
+         } else {
+            $possibles = array($sectionTitle, $sectionAbbrev);
+            foreach ($possibles as $possible) {
+               if ($possible) {
+                  XMLCustomWriter::createChildWithText($doc, $categoriesNode, 'subject', $possible);
+               }
+            }
+         }
+         return $categoriesNode;
+      }
+      return $default;
+	}
+
+   function &generateArticleSubjectCategory(&$doc, &$article) {
+      $default = null;
+      $subject = $article->getLocalizedSubject(JATS_DEFAULT_EXPORT_LOCALE);
+      if ($subject === '') {
+         return $default;
+      }
+      $subjectsNode =& XMLCustomWriter::createElement($doc, 'subj-group');
+      XMLCustomWriter::setAttribute($subjectsNode, 'subj-group-type', 'keywords');
+      $delimiters = array(';',',');
+      foreach ($delimiters as $delimiter) {
+         $subject_array = explode($delimiter, $subject);
+         if (count($subject_array) > 1) {
+            $subject = $subject_array;
+            break;
+         }
+      }
+      if (!is_array($subject)) {
+         $subject = array($subject);
+      }
+      foreach ($subject as $subj) {
+         XMLCustomWriter::createChildWithText($doc, $subjectsNode, 'subject', trim($subj));
+      }
+      return $subjectsNode;
+   }
+
+   function &generateArticleDisciplineCategory(&$doc, &$article) {
+      $default = null;
+      $subject = $article->getLocalizedDiscipline(JATS_DEFAULT_EXPORT_LOCALE);
+      if ($subject === '') {
+         return $default;
+      }
+      $subjectsNode =& XMLCustomWriter::createElement($doc, 'subj-group');
+      XMLCustomWriter::setAttribute($subjectsNode, 'subj-group-type', 'disciplines');
+      $delimiters = array(';',',');
+      foreach ($delimiters as $delimiter) {
+         $subject_array = explode($delimiter, $subject);
+         if (count($subject_array) > 1) {
+            $subject = $subject_array;
+            break;
+         }
+      }
+      if (!is_array($subject)) {
+         $subject = array($subject);
+      }
+      foreach ($subject as $subj) {
+         XMLCustomWriter::createChildWithText($doc, $subjectsNode, 'subject', trim($subj));
+      }
+      return $subjectsNode;
+   }
+
+   function &generateArticleContributorsDOM(&$doc, &$journal, &$issue, &$section, &$article) {
+      // authors
+      $root = XMLCustomWriter::createElement($doc, 'contrib-group');
+      foreach ($article->getAuthors() as $author) {
+         $authorNode =& JATSExportDOM::generateAuthorDom($doc, $journal, $issue, $article, $author);
+         XMLCustomWriter::appendChild($root, $authorNode);
+         unset($authorNode);
+      }
+      return $root;
+   }
+
 	function &generateAuthorDom(&$doc, &$journal, &$issue, &$article, &$author) {
-		$root =& XMLCustomWriter::createElement($doc, 'author');
-		if ($author->getPrimaryContact()) XMLCustomWriter::setAttribute($root, 'primary_contact', 'true');
-
-		XMLCustomWriter::createChildWithText($doc, $root, 'firstname', $author->getFirstName());
-		XMLCustomWriter::createChildWithText($doc, $root, 'middlename', $author->getMiddleName(), false);
-		XMLCustomWriter::createChildWithText($doc, $root, 'lastname', $author->getLastName());
-
+		$root =& XMLCustomWriter::createElement($doc, 'contrib');
+		XMLCustomWriter::setAttribute($root, 'contrib-type', 'author');
+		if ($author->getPrimaryContact()) XMLCustomWriter::setAttribute($root, 'corresp', 'yes');
+		
+      // Generate Name
+      $nameNode =& XMLCustomWriter::createElement($doc, 'name');
+      XMLCustomWriter::createChildWithText($doc, $nameNode, 'surname', $author->getLastName(), false);
+      $givenNames = $author->getData('firstName') . ' ' . ($author->getData('middleName') != '' ? $author->getData('middleName') : '');
+      XMLCustomWriter::createChildWithText($doc, $nameNode, 'given-names', $givenNames);
+      XMLCustomWriter::createChildWithText($doc, $root, 'prefix', $author->getSalutation(), false);
+      XMLCustomWriter::createChildWithText($doc, $root, 'suffix', $author->getSuffix(), false);
+      XMLCustomWriter::appendChild($root, $nameNode);
+      unset($nameNode);
+      
+      // Generate Address info
+      $addrNode =& XMLCustomWriter::createElement($doc, 'address');
+		XMLCustomWriter::createChildWithText($doc, $addrNode, 'country', $author->getCountry(), false);
+		XMLCustomWriter::createChildWithText($doc, $addrNode, 'email', $author->getEmail());
+		XMLCustomWriter::createChildWithText($doc, $addrNode, 'url', $author->getUrl(), false);
+      XMLCustomWriter::appendChild($root, $addrNode);
+      unset($addrNode);
+      
+      // Generate affiliations (XXX: There is a good amount of 'dirty' data in this setting, things like 'M.D.' or 'radiologist')
 		$affiliations = $author->getAffiliation(null);
 		if (is_array($affiliations)) foreach ($affiliations as $locale => $affiliation) {
-			$affiliationNode =& XMLCustomWriter::createChildWithText($doc, $root, 'affiliation', $affiliation, false);
-			if ($affiliationNode) XMLCustomWriter::setAttribute($affiliationNode, 'locale', $locale);
+			$affiliationNode =& XMLCustomWriter::createChildWithText($doc, $root, 'aff', $affiliation, false);
 			unset($affiliationNode);
 		}
-		XMLCustomWriter::createChildWithText($doc, $root, 'country', $author->getCountry(), false);
-		XMLCustomWriter::createChildWithText($doc, $root, 'email', $author->getEmail());
-		XMLCustomWriter::createChildWithText($doc, $root, 'url', $author->getUrl(), false);
-		if (is_array($author->getCompetingInterests(null))) foreach ($author->getCompetingInterests(null) as $locale => $competingInterests) {
-			$competingInterestsNode =& XMLCustomWriter::createChildWithText($doc, $root, 'competing_interests', strip_tags($competingInterests), false);
-			if ($competingInterestsNode) XMLCustomWriter::setAttribute($competingInterestsNode, 'locale', $locale);
-			unset($competingInterestsNode);
-		}
+
+      // XXX: The appropriate location for this is in an 'author-notes' block in an 'fn' of type 'conflict'
+      // if (is_array($author->getCompetingInterests(null))) foreach ($author->getCompetingInterests(null) as $locale => $competingInterests) {
+      //    $competingInterestsNode =& XMLCustomWriter::createChildWithText($doc, $root, 'competing_interests', strip_tags($competingInterests), false);
+      //    if ($competingInterestsNode) XMLCustomWriter::setAttribute($competingInterestsNode, 'locale', $locale);
+      //    unset($competingInterestsNode);
+      // }
+
+      // Generate bio element
 		if (is_array($author->getBiography(null))) foreach ($author->getBiography(null) as $locale => $biography) {
-			$biographyNode =& XMLCustomWriter::createChildWithText($doc, $root, 'biography', strip_tags($biography), false);
-			if ($biographyNode) XMLCustomWriter::setAttribute($biographyNode, 'locale', $locale);
+		   $biography = str_replace("\r\n", "\n", $biography);
+		   $biography = str_replace("\r", "\n", $biography);
+		   $biography = preg_replace("/\n{2,}/", "\n\n", $biography);
+			$biographyNode =& XMLCustomWriter::createChildWithText($doc, $root, 'bio', strip_tags($biography, '<p>'), false);
 			unset($biographyNode);
 		}
 
@@ -565,6 +711,22 @@ class JATSExportDOM {
 				$pubIdType = $pubIdPlugin->getPubIdType();
 				$idNode =& XMLCustomWriter::createChildWithText($doc, $node, 'id', $pubId);
 				XMLCustomWriter::setAttribute($idNode, 'type', $pubIdType);
+			}
+		}
+	}
+	
+	function generateArticleId(&$doc, &$node, &$article, &$issue) {
+		$pubIdPlugins =& PluginRegistry::loadCategory('pubIds', true, $issue->getJournalId());
+		if (is_array($pubIdPlugins)) foreach ($pubIdPlugins as $pubIdPlugin) {
+			if ($issue->getPublished()) {
+				$pubId = $pubIdPlugin->getPubId($article);
+			} else {
+				$pubId = $pubIdPlugin->getPubId($article, true);
+			}
+			if ($pubId) {
+				$pubIdType = $pubIdPlugin->getPubIdType();
+				$idNode =& XMLCustomWriter::createChildWithText($doc, $node, 'article-id', $pubId);
+				XMLCustomWriter::setAttribute($idNode, 'pub-id-type', $pubIdType);
 			}
 		}
 	}
