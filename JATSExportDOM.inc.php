@@ -409,16 +409,16 @@ class JATSExportDOM {
 		// add volume and issue numbers
 		XMLCustomWriter::createChildWithText($doc, $root, 'volume', $issue->getVolume());
 		XMLCustomWriter::createChildWithText($doc, $root, 'issue', $issue->getNumber());
+		// permissions (stock for all articles)
+		$permsNode =& JATSExportDOM::generateArticlePermissionsDOM($doc);
+		XMLCustomWriter::appendChild($root, $permsNode);
+		unset($permsNode);
 		// self-uri is the view url of this specific article online
 		JATSExportDom::createArticleSelfUriNode($doc, $root, $journal, $article);
 		// abstract
 		$abstractNode =& JATSExportDOM::generateArticleAbstractDOM($doc, $article);
 		XMLCustomWriter::appendChild($root, $abstractNode);
 		unset($abstractNode);
-		// permissions (stock for all articles)
-		$permsNode =& JATSExportDOM::generateArticlePermissionsDOM($doc);
-		XMLCustomWriter::appendChild($root, $permsNode);
-		unset($permsNode);
 		
 		return $root;
 	}
