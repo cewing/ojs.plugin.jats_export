@@ -415,7 +415,11 @@ class JATSExportDOM {
 		$abstractNode =& JATSExportDOM::generateArticleAbstractDOM($doc, $article);
 		XMLCustomWriter::appendChild($root, $abstractNode);
 		unset($abstractNode);
-		// XMLCustomWriter::createChildWithText($doc, $root, 'abstract', $article->getLocalizedAbstract());
+		// permissions (stock for all articles)
+		$permsNode =& JATSExportDOM::generateArticlePermissionsDOM($doc);
+		XMLCustomWriter::appendChild($root, $permsNode);
+		unset($permsNode);
+		
 		return $root;
 	}
 
@@ -601,6 +605,18 @@ class JATSExportDOM {
 				}
 			}
 		}
+		return $root;
+	}
+	
+	function &generateArticlePermissionsDOM($doc) {
+		$root = XMLCustomWriter::createElement($doc, 'permissions');
+		$copyrightText = "Copyright for this article is retained by the authors.";
+		XMLCustomWriter::createChildWithText($doc, $root, 'copyright-statement', $copyrightText);
+		$licenseText = 'This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 2.5 License.';
+		$licenseUrl = 'http://creativecommons.org/licenses/by-nc-nd/2.5/';
+		$licenseNode = XMLCustomWriter::createChildWithText($doc, $root, 'license', $licenseText);
+		XMLCustomWriter::setAttribute($licenseNode, 'license-type', 'CC BY-NC-ND 2.5');
+		XMLCustomWriter::setAttribute($licenseNode, 'xlink:href', $licenseUrl);
 		return $root;
 	}
 
