@@ -156,6 +156,15 @@ class JATSExportDOM {
 		XMLCustomWriter::appendChild($root, $frontNode);
 		unset($frontNode);
 
+		/* --- Article Body (as represented by the HTML galley for this article) --- */
+		foreach ($article->getGalleys() as $galley) {
+			if ($galley->isHTMLGalley()) {
+				$bodyNode =& JATSExportDOM::generateArticleBodyDom($doc, $journal, $issue, $article, $galley);
+				if ($bodyNode !== null) XMLCustomWriter::appendChild($root, $bodyNode);
+				unset($bodyNode);
+			}
+		}
+
 		/* --- Titles and Abstracts --- */
 		// if (is_array($article->getTitle(null))) foreach ($article->getTitle(null) as $locale => $title) {
 		//		$titleNode =& XMLCustomWriter::createChildWithText($doc, $root, 'title', $title, false);
@@ -298,10 +307,10 @@ class JATSExportDOM {
 
 
 		/* --- Galleys --- */
-		//			foreach ($article->getGalleys() as $galley) {
-		//				$galleyNode =& NativeExportDom::generateGalleyDom($doc, $journal, $issue, $article, $galley);
-		//				if ($galleyNode !== null) XMLCustomWriter::appendChild($root, $galleyNode);
-		//				unset($galleyNode);
+		// foreach ($article->getGalleys() as $galley) {
+		// 	$galleyNode =& JATSExportDOM::generateGalleyDom($doc, $journal, $issue, $article, $galley);
+		// 	if ($galleyNode !== null) XMLCustomWriter::appendChild($root, $galleyNode);
+		// 	unset($galleyNode);
 		// }
 
 		/* --- Supplementary Files --- */
@@ -410,7 +419,7 @@ class JATSExportDOM {
 		XMLCustomWriter::createChildWithText($doc, $root, 'volume', $issue->getVolume());
 		XMLCustomWriter::createChildWithText($doc, $root, 'issue', $issue->getNumber());
 		// permissions (stock for all articles)
-		$permsNode =& JATSExportDOM::generateArticlePermissionsDOM($doc);
+		$permsNode =& JATSExportDOM::generateArticlePermissionsDOM($doc, $article);
 		XMLCustomWriter::appendChild($root, $permsNode);
 		unset($permsNode);
 		// self-uri is the view url of this specific article online
@@ -608,15 +617,48 @@ class JATSExportDOM {
 		return $root;
 	}
 	
-	function &generateArticlePermissionsDOM($doc) {
+	function &generateArticlePermissionsDOM(&$doc, &$article) {
 		$root = XMLCustomWriter::createElement($doc, 'permissions');
 		$copyrightText = "Copyright for this article is retained by the authors.";
+		$year = false;
+		$pubdateAsString = $article->getDatePublished();
+		if ($pubdateAsString != '') {
+			// create DateTime object so we can get bits and pieces at will
+			$datetime = new DateTime($pubdateAsString);
+			$year = $datetime->format('Y');
+			$copyrightText = "Copyright: © " . $year . " The Authors.";
+		}
 		XMLCustomWriter::createChildWithText($doc, $root, 'copyright-statement', $copyrightText);
-		$licenseText = 'This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivs 2.5 License.';
+		if ($year) {
+			XMLCustomWriter::createChildWithText($doc, $root, 'copyright-year', $year);
+		}
 		$licenseUrl = 'http://creativecommons.org/licenses/by-nc-nd/2.5/';
-		$licenseNode = XMLCustomWriter::createChildWithText($doc, $root, 'license', $licenseText);
-		XMLCustomWriter::setAttribute($licenseNode, 'license-type', 'CC BY-NC-ND 2.5');
+		$licenseNode = XMLCustomWriter::createElement($doc, 'license');
+		XMLCustomWriter::setAttribute($licenseNode, 'license-type', 'open-access');
 		XMLCustomWriter::setAttribute($licenseNode, 'xlink:href', $licenseUrl);
+		$licenseText = " This is an open-access article distributed under the terms of the Creative Commons Attribution-NonCommercial-NoDerivs 2.5 License, which permits reproduction and distribution, provided the original work is properly cited. Commercial use and derivative works are not permitted.";
+		XMLCustomWriter::createChildWithText($doc, $licenseNode, 'license-p', $licenseText);
+		XMLCustomWriter::appendChild($root, $licenseNode);
+		return $root;
+	}
+	
+	function &generateArticleBodyDom(&$doc, &$journal, &$issue, &$article, &$galley) {
+		import('classes.file.ArticleFileManager');
+		$articleFileManager = new ArticleFilemanager($article->getId());
+		$articleFileDao =& DAORegistry::getDAO('ArticleFileDAO');
+		
+		$root =& XMLCustomWriter::createElement($doc, 'body');
+		
+		$galleyFile =& $articleFileManager->getFile($galley->getFileId());
+		$filePath = $galleyFile->getFilePath();
+		// $fileContent = $articleFileManager->readFile($galley->getFileId());
+		// 
+		// $bodyDoc = new DOMDocument();
+		// $bodyDoc->loadHTML($fileContent);
+		
+		$fileNode =& XMLCustomWriter::createTextNode($doc, $filePath);
+		XMLCustomWriter::appendChild($root, $fileNode);
+		
 		return $root;
 	}
 
@@ -636,19 +678,19 @@ class JATSExportDOM {
 		XMLCustomWriter::setAttribute($root, 'locale', $galley->getLocale());
 		XMLCustomWriter::setAttribute($root, 'public_id', $galley->getPubId('publisher-id'), false);
 
-		NativeExportDom::generatePubId($doc, $root, $galley, $issue);
+		JATSExportDOM::generatePubId($doc, $root, $galley, $issue);
 
 		XMLCustomWriter::createChildWithText($doc, $root, 'label', $galley->getLabel());
 
 		/* --- Galley file --- */
-		// $fileNode =& XMLCustomWriter::createElement($doc, 'file');
-		// XMLCustomWriter::appendChild($root, $fileNode);
-		// $embedNode =& XMLCustomWriter::createChildWithText($doc, $fileNode, 'embed', base64_encode($articleFileManager->readFile($galley->getFileId())));
-		// $articleFile =& $articleFileDao->getArticleFile($galley->getFileId());
-		// if (!$articleFile) return $articleFile; // Stupidity check
-		// XMLCustomWriter::setAttribute($embedNode, 'filename', $articleFile->getOriginalFileName());
-		// XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-		// XMLCustomWriter::setAttribute($embedNode, 'mime_type', $articleFile->getFileType());
+		$fileNode =& XMLCustomWriter::createElement($doc, 'file');
+		XMLCustomWriter::appendChild($root, $fileNode);
+		$embedNode =& XMLCustomWriter::createChildWithText($doc, $fileNode, 'embed', base64_encode($articleFileManager->readFile($galley->getFileId())));
+		$articleFile =& $articleFileDao->getArticleFile($galley->getFileId());
+		if (!$articleFile) return $articleFile; // Stupidity check
+		XMLCustomWriter::setAttribute($embedNode, 'filename', $articleFile->getOriginalFileName());
+		XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
+		XMLCustomWriter::setAttribute($embedNode, 'mime_type', $articleFile->getFileType());
 
 		/* --- HTML-specific data: Stylesheet and/or images --- */
 
@@ -681,7 +723,7 @@ class JATSExportDOM {
 	function &generateSuppFileDom(&$doc, &$journal, &$issue, &$article, &$suppFile) {
 		$root =& XMLCustomWriter::createElement($doc, 'supplemental_file');
 
-		NativeExportDom::generatePubId($doc, $root, $suppFile, $issue);
+		JATSExportDOM::generatePubId($doc, $root, $suppFile, $issue);
 
 		// FIXME: These should be constants!
 		switch ($suppFile->getType()) {
