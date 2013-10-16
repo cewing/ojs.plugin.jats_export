@@ -156,169 +156,12 @@ class JATSExportDOM {
 		XMLCustomWriter::appendChild($root, $frontNode);
 		unset($frontNode);
 
-		/* --- Article Body (as represented by the HTML galley for this article) --- */
-		foreach ($article->getGalleys() as $galley) {
-			if ($galley->isHTMLGalley()) {
-				$bodyNode =& JATSExportDOM::generateArticleBodyDom($doc, $journal, $issue, $article, $galley);
-				if ($bodyNode !== null) XMLCustomWriter::appendChild($root, $bodyNode);
-				unset($bodyNode);
-			}
-		}
-
-		/* --- Titles and Abstracts --- */
-		// if (is_array($article->getTitle(null))) foreach ($article->getTitle(null) as $locale => $title) {
-		//		$titleNode =& XMLCustomWriter::createChildWithText($doc, $root, 'title', $title, false);
-		//		if ($titleNode) XMLCustomWriter::setAttribute($titleNode, 'locale', $locale);
-		//		unset($titleNode);
-		// }
-		// 
-		// if (is_array($article->getAbstract(null))) foreach ($article->getAbstract(null) as $locale => $abstract) {
-		//		$abstractNode =& XMLCustomWriter::createChildWithText($doc, $root, 'abstract', $abstract, false);
-		//		if ($abstractNode) XMLCustomWriter::setAttribute($abstractNode, 'locale', $locale);
-		//		unset($abstractNode);
-		// }
-
-		/* --- Indexing --- */
-
-		// $indexingNode =& XMLCustomWriter::createElement($doc, 'indexing');
-		// $isIndexingNecessary = false;
-		// 
-		// if (is_array($article->getDiscipline(null))) foreach ($article->getDiscipline(null) as $locale => $discipline) {
-		//		$disciplineNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'discipline', $discipline, false);
-		//		if ($disciplineNode) {
-		//			XMLCustomWriter::setAttribute($disciplineNode, 'locale', $locale);
-		//			$isIndexingNecessary = true;
-		//		}
-		//		unset($disciplineNode);
-		// }
-		// if (is_array($article->getType(null))) foreach ($article->getType(null) as $locale => $type) {
-		//		$typeNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'type', $type, false);
-		//		if ($typeNode) {
-		//			XMLCustomWriter::setAttribute($typeNode, 'locale', $locale);
-		//			$isIndexingNecessary = true;
-		//		}
-		//		unset($typeNode);
-		// }
-		// if (is_array($article->getSubject(null))) foreach ($article->getSubject(null) as $locale => $subject) {
-		//		$subjectNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'subject', $subject, false);
-		//		if ($subjectNode) {
-		//			XMLCustomWriter::setAttribute($subjectNode, 'locale', $locale);
-		//			$isIndexingNecessary = true;
-		//		}
-		//		unset($subjectNode);
-		// }
-		// if (is_array($article->getSubjectClass(null))) foreach ($article->getSubjectClass(null) as $locale => $subjectClass) {
-		//		$subjectClassNode =& XMLCustomWriter::createChildWithText($doc, $indexingNode, 'subject_class', $subjectClass, false);
-		//		if ($subjectClassNode) {
-		//			XMLCustomWriter::setAttribute($subjectClassNode, 'locale', $locale);
-		//			$isIndexingNecessary = true;
-		//		}
-		//		unset($subjectClassNode);
-		// }
-		// 
-		// $coverageNode =& XMLCustomWriter::createElement($doc, 'coverage');
-		// $isCoverageNecessary = false;
-		// 
-		// if (is_array($article->getCoverageGeo(null))) foreach ($article->getCoverageGeo(null) as $locale => $geographical) {
-		//		$geographicalNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'geographical', $geographical, false);
-		//		if ($geographicalNode) {
-		//			XMLCustomWriter::setAttribute($geographicalNode, 'locale', $locale);
-		//			$isCoverageNecessary = true;
-		//		}
-		//		unset($geographicalNode);
-		// }
-		// if (is_array($article->getCoverageChron(null))) foreach ($article->getCoverageChron(null) as $locale => $chronological) {
-		//		$chronologicalNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'chronological', $chronological, false);
-		//		if ($chronologicalNode) {
-		//			XMLCustomWriter::setAttribute($chronologicalNode, 'locale', $locale);
-		//			$isCoverageNecessary = true;
-		//		}
-		//		unset($chronologicalNode);
-		// }
-		// if (is_array($article->getCoverageSample(null))) foreach ($article->getCoverageSample(null) as $locale => $sample) {
-		//		$sampleNode =& XMLCustomWriter::createChildWithText($doc, $coverageNode, 'sample', $sample, false);
-		//		if ($sampleNode) {
-		//			XMLCustomWriter::setAttribute($sampleNode, 'locale', $locale);
-		//			$isCoverageNecessary = true;
-		//		}
-		//		unset($sampleNode);
-		// }
-		// 
-		// if ($isCoverageNecessary) {
-		//		XMLCustomWriter::appendChild($indexingNode, $coverageNode);
-		//		$isIndexingNecessary = true;
-		// }
-		// 
-		// if ($isIndexingNecessary) XMLCustomWriter::appendChild($root, $indexingNode);
-
-		/* --- */
-
-		/* --- Authors --- */
-
-		// foreach ($article->getAuthors() as $author) {
-		//		$authorNode =& NativeExportDom::generateAuthorDom($doc, $journal, $issue, $article, $author);
-		//		XMLCustomWriter::appendChild($root, $authorNode);
-		//		unset($authorNode);
-		// }
-
-		/* --- */
-		// if (is_array($article->getShowCoverPage(null))) foreach (array_keys($article->getShowCoverPage(null)) as $locale) {
-		//		if ($article->getShowCoverPage($locale)) {
-		//			$coverNode =& XMLCustomWriter::createElement($doc, 'cover');
-		//			XMLCustomWriter::appendChild($root, $coverNode);
-		//			XMLCustomWriter::setAttribute($coverNode, 'locale', $locale);
-		// 
-		//			XMLCustomWriter::createChildWithText($doc, $coverNode, 'altText', $issue->getCoverPageDescription($locale), false);
-		// 
-		//			$coverFile = $article->getFileName($locale);
-		//			if ($coverFile != '') {
-		//				$imageNode =& XMLCustomWriter::createElement($doc, 'image');
-		//				XMLCustomWriter::appendChild($coverNode, $imageNode);
-		//				import('classes.file.PublicFileManager');
-		//				$publicFileManager = new PublicFileManager();
-		//				$coverPagePath = $publicFileManager->getJournalFilesPath($journal->getId()) . '/';
-		//				$coverPagePath .= $coverFile;
-		//				$embedNode =& XMLCustomWriter::createChildWithText($doc, $imageNode, 'embed', base64_encode($publicFileManager->readFile($coverPagePath)));
-		//				XMLCustomWriter::setAttribute($embedNode, 'filename', $article->getOriginalFileName($locale));
-		//				XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-		//				XMLCustomWriter::setAttribute($embedNode, 'mime_type', String::mime_content_type($coverPagePath));
-		//			}
-		// 
-		//			unset($coverNode);
-		//		}
-		// }
+		/* --- Article Body () --- */
+		$bodyNode =& JATSExportDOM::generateArticleBodyDom($doc, $journal, $issue, $article);
+		if ($bodyNode !== null) XMLCustomWriter::appendChild($root, $bodyNode);
+		unset($bodyNode);
 
 		// XMLCustomWriter::createChildWithText($doc, $root, 'pages', $article->getPages(), false);
-
-		// NOTE that this is a required field for import, but it's
-		// possible here to generate nonconforming XML via export b/c
-		// of the potentially missing date_published node. This is due
-		// to legacy data issues WRT an earlier lack of ability to
-		// define article pub dates. Some legacy data will be missing
-		// this date.
-		// XMLCustomWriter::createChildWithText($doc, $root, 'date_published', NativeExportDom::formatDate($article->getDatePublished()), false);
-		// 
-		// if ($article->getAccessStatus() == ARTICLE_ACCESS_OPEN) {
-		//		$accessNode =& XMLCustomWriter::createElement($doc, 'open_access');
-		//		XMLCustomWriter::appendChild($root, $accessNode);
-		// }
-
-		/* --- */
-
-
-		/* --- Galleys --- */
-		// foreach ($article->getGalleys() as $galley) {
-		// 	$galleyNode =& JATSExportDOM::generateGalleyDom($doc, $journal, $issue, $article, $galley);
-		// 	if ($galleyNode !== null) XMLCustomWriter::appendChild($root, $galleyNode);
-		// 	unset($galleyNode);
-		// }
-
-		/* --- Supplementary Files --- */
-		// foreach ($article->getSuppFiles() as $suppFile) {
-		//		$suppNode =& NativeExportDom::generateSuppFileDom($doc, $journal, $issue, $article, $suppFile);
-		//		if ($suppNode !== null) XMLCustomWriter::appendChild($root, $suppNode);
-		//		unset($suppNode);
-		// }
 
 		return $root;
 	}
@@ -337,11 +180,52 @@ class JATSExportDOM {
 		return $root;
 	}
 
+	function &generateArticleBodyDom(&$doc, &$journal, &$issue, &$article) {
+		$root =& XMLCustomWriter::createElement($doc, 'body');
+		
+		// render the list of galley files as data structure
+		$galleysNode =& XMLCustomWriter::createElement($doc, 'galley-files');
+		$hasGalleys = false;
+		foreach ($article->getLocalizedGalleys() as $galley) {
+			if ($galley->isHTMLGalley()) {
+				// if we have an html galley, then use it to render the HTML markup for this article;
+				$markupNode =& JATSExportDom::generateHtmlBodyCData($doc, $journal, $article, $galley);
+				if ($markupNode !== null) XMLCustomWriter::appendChild($root, $markupNode);
+			}
+			$galleyNode =& JATSExportDom::generateGalleyDom($doc, $journal, $issue, $article, $galley);
+			if ($galleyNode !== null) {
+				XMLCustomWriter::appendChild($galleysNode, $galleyNode);
+				$hasGalleys = true;
+			}
+			unset($galleyNode);
+		}
+		if ($hasGalleys) {
+			XMLCustomWriter::appendChild($root, $galleysNode);
+		}
+		
+		// render the list of supplemental files as data structure
+		$suppFilesNode =& XMLCustomWriter::createElement($doc, 'supplemental-files');
+		$hasSuppFiles = false;
+		foreach ($article->getSuppFiles() as $suppFile) {
+				$suppNode =& JATSExportDom::generateSuppFileDom($doc, $journal, $issue, $article, $suppFile);
+				if ($suppNode !== null) {
+					XMLCustomWriter::appendChild($suppFilesNode, $suppNode);
+					$hasSuppFiles = true;
+				}
+				unset($suppNode);
+		}
+		if ($hasSuppFiles) {
+			XMLCustomWriter::appendChild($root, $suppFilesNode);
+		}
+		
+		return $root;
+	}
+
 	function &generateJournalMetaDom(&$doc, &$journal, &$issue) {
 		$root =& XMLCustomWriter::createElement($doc, 'journal-meta');
 		// add journal id (publisher type) to meta
 		$journalPublisherIdNode =& XMLCustomWriter::createChildWithText($doc, $root, 'journal-id', $journal->getSetting('abbreviation', JATS_DEFAULT_EXPORT_LOCALE));
-		XMLCustomWriter::setAttribute($journalPublisherIdNode, 'journal-id-type', 'publisher');
+		XMLCustomWriter::setAttribute($journalPublisherIdNode, 'journal-id-type', 'publisher-id');
 		unset($journalPublisherIdNode);
 		// add journal title to meta
 		$titleGroup =& XMLCustomWriter::createElement($doc, 'journal-title-group');
@@ -418,6 +302,7 @@ class JATSExportDOM {
 		// add volume and issue numbers
 		XMLCustomWriter::createChildWithText($doc, $root, 'volume', $issue->getVolume());
 		XMLCustomWriter::createChildWithText($doc, $root, 'issue', $issue->getNumber());
+		XMLCustomWriter::createChildWithText($doc, $root, 'elocation-id', $article->getArticleId());
 		// permissions (stock for all articles)
 		$permsNode =& JATSExportDOM::generateArticlePermissionsDOM($doc, $article);
 		XMLCustomWriter::appendChild($root, $permsNode);
@@ -559,7 +444,10 @@ class JATSExportDOM {
 			$biography = str_replace("\r\n", "\n", $biography);
 			$biography = str_replace("\r", "\n", $biography);
 			$biography = preg_replace("/\n{2,}/", "\n\n", $biography);
-			$biographyNode =& XMLCustomWriter::createChildWithText($doc, $root, 'bio', strip_tags($biography, '<p>'), false);
+			$biographyNode =& XMLCustomWriter::createElement($doc, 'bio');
+			XMLCustomWriter::appendChild($root, $biographyNode);
+			$biographyGraph =& XMLCustomWriter::createChildWithText($doc, $biographyNode, 'p', strip_tags($biography, '<p>'), false);
+			unset($biographyGraph);
 			unset($biographyNode);
 		}
 
@@ -568,9 +456,12 @@ class JATSExportDOM {
 	
 	function &generateArticleConflictStatement(&$doc) {
 		$root =& XMLCustomWriter::createElement($doc, 'author-notes');
+		$fn_node =& XMLCustomWriter::createElement($doc, 'fn');
+		XMLCustomWriter::setAttribute($fn_node, 'fn-type', 'conflict');
+		XMLCustomWriter::appendChild($root, $fn_node);
 		$stock_statement = "No conflicts of interest have been declared";
-		$conflict =& XMLCustomWriter::createChildWithText($doc, $root, 'fn', $stock_statement);
-		XMLCustomWriter::setAttribute($conflict, 'fn-type', 'conflict');
+		$conflict =& XMLCustomWriter::createChildWithText($doc, $fn_node, 'p', $stock_statement);
+		
 		return $root;
 	}
 	
@@ -641,42 +532,32 @@ class JATSExportDOM {
 		XMLCustomWriter::appendChild($root, $licenseNode);
 		return $root;
 	}
-	
-	function &generateArticleBodyDom(&$doc, &$journal, &$issue, &$article, &$galley) {
+
+	function &generateHtmlBodyCData(&$doc, &$journal, &$article, &$galley) {
+		$root =& XMLCustomWriter::createElement($doc, 'article-markup');
+		XMLCustomWriter::setAttribute($root, 'galley-id', $galley->getBestGalleyId($journal));
+		
 		import('classes.file.ArticleFileManager');
-		$articleFileManager = new ArticleFilemanager($article->getId());
+		$articleFileManager = new ArticleFileManager($article->getId());
 		$articleFileDao =& DAORegistry::getDAO('ArticleFileDAO');
 		
-		$root =& XMLCustomWriter::createElement($doc, 'body');
-		
-		$galleyFile =& $articleFileManager->getFile($galley->getFileId());
-		$filePath = $galleyFile->getFilePath();
-		// $fileContent = $articleFileManager->readFile($galley->getFileId());
-		// 
-		// $bodyDoc = new DOMDocument();
-		// $bodyDoc->loadHTML($fileContent);
-		
-		$fileNode =& XMLCustomWriter::createTextNode($doc, $filePath);
-		XMLCustomWriter::appendChild($root, $fileNode);
+		$fileContent = $articleFileManager->readFile($galley->getFileId());
+		$cdataSection = $doc->createCDATASection($fileContent);
+		XMLCustomWriter::appendChild($root, $cdataSection);
 		
 		return $root;
 	}
 
 	function &generateGalleyDom(&$doc, &$journal, &$issue, &$article, &$galley) {
 		$isHtml = $galley->isHTMLGalley();
-		
-		/* skip non-html galleys for the moment */
-		if (!$isHtml) {
-			return $root;
-		}
 
 		import('classes.file.ArticleFileManager');
 		$articleFileManager = new ArticleFileManager($article->getId());
 		$articleFileDao =& DAORegistry::getDAO('ArticleFileDAO');
 
 		$root =& XMLCustomWriter::createElement($doc, $isHtml?'htmlgalley':'galley');
-		XMLCustomWriter::setAttribute($root, 'locale', $galley->getLocale());
-		XMLCustomWriter::setAttribute($root, 'public_id', $galley->getPubId('publisher-id'), false);
+		XMLCustomWriter::setAttribute($root, 'public-id', $galley->getPubId('publisher-id'), false);
+		XMLCustomWriter::setAttribute($root, 'galley-id', $galley->getBestGalleyId($journal));
 
 		JATSExportDOM::generatePubId($doc, $root, $galley, $issue);
 
@@ -685,12 +566,13 @@ class JATSExportDOM {
 		/* --- Galley file --- */
 		$fileNode =& XMLCustomWriter::createElement($doc, 'file');
 		XMLCustomWriter::appendChild($root, $fileNode);
-		$embedNode =& XMLCustomWriter::createChildWithText($doc, $fileNode, 'embed', base64_encode($articleFileManager->readFile($galley->getFileId())));
+		// $embedNode =& XMLCustomWriter::createChildWithText($doc, $fileNode, 'embed', base64_encode($articleFileManager->readFile($galley->getFileId())));
+		$pathNode =& XMLCustomWriter::createTextNode($doc, $galley->getFilePath());
 		$articleFile =& $articleFileDao->getArticleFile($galley->getFileId());
 		if (!$articleFile) return $articleFile; // Stupidity check
-		XMLCustomWriter::setAttribute($embedNode, 'filename', $articleFile->getOriginalFileName());
-		XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-		XMLCustomWriter::setAttribute($embedNode, 'mime_type', $articleFile->getFileType());
+		XMLCustomWriter::appendChild($fileNode, $pathNode);
+		XMLCustomWriter::setAttribute($fileNode, 'filename', $articleFile->getOriginalFileName());
+		XMLCustomWriter::setAttribute($fileNode, 'mimetype', $articleFile->getFileType());
 
 		/* --- HTML-specific data: Stylesheet and/or images --- */
 
@@ -699,21 +581,23 @@ class JATSExportDOM {
 			if ($styleFile) {
 				$styleNode =& XMLCustomWriter::createElement($doc, 'stylesheet');
 				XMLCustomWriter::appendChild($root, $styleNode);
-				$embedNode =& XMLCustomWriter::createChildWithText($doc, $styleNode, 'embed', base64_encode($articleFileManager->readFile($styleFile->getFileId())));
-				XMLCustomWriter::setAttribute($embedNode, 'filename', $styleFile->getOriginalFileName());
-				XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-				XMLCustomWriter::setAttribute($embedNode, 'mime_type', 'text/css');
+				$pathNode =& XMLCustomWriter::createTextNode($doc, $styleFile->getFilePath());
+				XMLCustomWriter::appendChild($styleNode, $pathNode);
+				XMLCustomWriter::setAttribute($styleNode, 'filename', $styleFile->getOriginalFileName());
+				XMLCustomWriter::setAttribute($styleNode, 'mimetype', 'text/css');
+				unset($styleNode);
+				unset($pathNode);
 			}
 
 			foreach ($galley->getImageFiles() as $imageFile) {
 				$imageNode =& XMLCustomWriter::createElement($doc, 'image');
 				XMLCustomWriter::appendChild($root, $imageNode);
-				$embedNode =& XMLCustomWriter::createChildWithText($doc, $imageNode, 'embed', base64_encode($articleFileManager->readFile($imageFile->getFileId())));
-				XMLCustomWriter::setAttribute($embedNode, 'filename', $imageFile->getOriginalFileName());
-				XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-				XMLCustomWriter::setAttribute($embedNode, 'mime_type', $imageFile->getFileType());
+				$pathNode =& XMLCustomWriter::createTextNode($doc, $imageFile->getFilePath());
+				XMLCustomWriter::appendChild($imageNode, $pathNode);
+				XMLCustomWriter::setAttribute($imageNode, 'filename', $imageFile->getOriginalFileName());
+				XMLCustomWriter::setAttribute($imageNode, 'mimetype', $imageFile->getFileType());
 				unset($imageNode);
-				unset($embedNode);
+				unset($pathNode);
 			}
 		}
 
@@ -721,7 +605,7 @@ class JATSExportDOM {
 	}
 
 	function &generateSuppFileDom(&$doc, &$journal, &$issue, &$article, &$suppFile) {
-		$root =& XMLCustomWriter::createElement($doc, 'supplemental_file');
+		$root =& XMLCustomWriter::createElement($doc, 'supplemental-file');
 
 		JATSExportDOM::generatePubId($doc, $root, $suppFile, $issue);
 
@@ -756,60 +640,13 @@ class JATSExportDOM {
 		XMLCustomWriter::setAttribute($root, 'type', $suppFileType);
 		XMLCustomWriter::setAttribute($root, 'public_id', $suppFile->getPubId('publisher-id'), false);
 		XMLCustomWriter::setAttribute($root, 'language', $suppFile->getLanguage(), false);
-		XMLCustomWriter::setAttribute($root, 'show_reviewers', $suppFile->getShowReviewers()?'true':'false');
-
-		if (is_array($suppFile->getTitle(null))) foreach ($suppFile->getTitle(null) as $locale => $title) {
-			$titleNode =& XMLCustomWriter::createChildWithText($doc, $root, 'title', $title, false);
-			if ($titleNode) XMLCustomWriter::setAttribute($titleNode, 'locale', $locale);
-			unset($titleNode);
-		}
-		if (is_array($suppFile->getCreator(null))) foreach ($suppFile->getCreator(null) as $locale => $creator) {
-			$creatorNode =& XMLCustomWriter::createChildWithText($doc, $root, 'creator', $creator, false);
-			if ($creatorNode) XMLCustomWriter::setAttribute($creatorNode, 'locale', $locale);
-			unset($creatorNode);
-		}
-		if (is_array($suppFile->getSubject(null))) foreach ($suppFile->getSubject(null) as $locale => $subject) {
-			$subjectNode =& XMLCustomWriter::createChildWithText($doc, $root, 'subject', $subject, false);
-			if ($subjectNode) XMLCustomWriter::setAttribute($subjectNode, 'locale', $locale);
-			unset($subjectNode);
-		}
-		if ($suppFileType == 'other') {
-			if (is_array($suppFile->getTypeOther(null))) foreach ($suppFile->getTypeOther(null) as $locale => $typeOther) {
-				$typeOtherNode =& XMLCustomWriter::createChildWithText($doc, $root, 'type_other', $typeOther, false);
-				if ($typeOtherNode) XMLCustomWriter::setAttribute($typeOtherNode, 'locale', $locale);
-				unset($typeOtherNode);
-			}
-		}
-		if (is_array($suppFile->getDescription(null))) foreach ($suppFile->getDescription(null) as $locale => $description) {
-			$descriptionNode =& XMLCustomWriter::createChildWithText($doc, $root, 'description', $description, false);
-			if ($descriptionNode) XMLCustomWriter::setAttribute($descriptionNode, 'locale', $locale);
-			unset($descriptionNode);
-		}
-		if (is_array($suppFile->getPublisher(null))) foreach ($suppFile->getPublisher(null) as $locale => $publisher) {
-			$publisherNode =& XMLCustomWriter::createChildWithText($doc, $root, 'publisher', $publisher, false);
-			if ($publisherNode) XMLCustomWriter::setAttribute($publisherNode, 'locale', $locale);
-			unset($publisherNode);
-		}
-		if (is_array($suppFile->getSponsor(null))) foreach ($suppFile->getSponsor(null) as $locale => $sponsor) {
-			$sponsorNode =& XMLCustomWriter::createChildWithText($doc, $root, 'sponsor', $sponsor, false);
-			if ($sponsorNode) XMLCustomWriter::setAttribute($sponsorNode, 'locale', $locale);
-			unset($sponsorNode);
-		}
-		XMLCustomWriter::createChildWithText($doc, $root, 'date_created', NativeExportDom::formatDate($suppFile->getDateCreated()), false);
-		if (is_array($suppFile->getSource(null))) foreach ($suppFile->getSource(null) as $locale => $source) {
-			$sourceNode =& XMLCustomWriter::createChildWithText($doc, $root, 'source', $source, false);
-			if ($sourceNode) XMLCustomWriter::setAttribute($sourceNode, 'locale', $locale);
-			unset($sourceNode);
-		}
 
 		import('classes.file.ArticleFileManager');
-		$articleFileManager = new ArticleFileManager($article->getId());
-		$fileNode =& XMLCustomWriter::createElement($doc, 'file');
-		XMLCustomWriter::appendChild($root, $fileNode);
-		$embedNode =& XMLCustomWriter::createChildWithText($doc, $fileNode, 'embed', base64_encode($articleFileManager->readFile($suppFile->getFileId())));
-		XMLCustomWriter::setAttribute($embedNode, 'filename', $suppFile->getOriginalFileName());
-		XMLCustomWriter::setAttribute($embedNode, 'encoding', 'base64');
-		XMLCustomWriter::setAttribute($embedNode, 'mime_type', $suppFile->getFileType());
+		$pathNode =& XMLCustomWriter::createTextNode($doc, $suppFile->getFilePath());
+		XMLCustomWriter::appendChild($root, $pathNode);
+		XMLCustomWriter::setAttribute($root, 'filename', $suppFile->getOriginalFileName());
+		XMLCustomWriter::setAttribute($root, 'encoding', 'base64');
+		XMLCustomWriter::setAttribute($root, 'mime_type', $suppFile->getFileType());
 
 		return $root;
 	}
