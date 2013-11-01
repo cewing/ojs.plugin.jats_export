@@ -445,8 +445,10 @@ class JATSExportDOM {
 			$biography = str_replace("\r", "\n", $biography);
 			$biography = preg_replace("/\n{2,}/", "\n\n", $biography);
 			$biographyNode =& XMLCustomWriter::createElement($doc, 'bio');
-			XMLCustomWriter::appendChild($root, $biographyNode);
 			$biographyGraph =& XMLCustomWriter::createChildWithText($doc, $biographyNode, 'p', strip_tags($biography, '<p>'), false);
+			if ($biographyGraph != null) {
+				XMLCustomWriter::appendChild($root, $biographyNode);
+			}
 			unset($biographyGraph);
 			unset($biographyNode);
 		}
