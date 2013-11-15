@@ -364,7 +364,7 @@ class JATSExportDOM {
 			$subject = array($subject);
 		}
 		foreach ($subject as $subj) {
-			XMLCustomWriter::createChildWithText($doc, $subjectsNode, 'subject', trim($subj));
+			XMLCustomWriter::createChildWithText($doc, $subjectsNode, 'subject', trim($subj), false);
 		}
 		return $subjectsNode;
 	}
